@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Sample WebExtension",
+  "name": "SN Sync",
   "version": "0.0.0",
 
   "icons": {
@@ -17,7 +17,8 @@
     "activeTab",
     "storage",
     "http://*/*",
-    "https://*/*"
+    "https://*/*",
+    "websockets"
   ],
 
   "content_security_policy": "script-src 'self'; object-src 'self'",

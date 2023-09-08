@@ -11,6 +11,8 @@
 		"sourceType": "module"
 	},
 	"rules": {
+		"object-curly-spacing": "off",
+		"indent": ["error", 2],
 		"no-console": "off",
 		"no-extend-native": "off",
 		"react/jsx-props-no-spreading": "off",
