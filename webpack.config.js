@@ -63,6 +63,7 @@ module.exports = {
     contentScript: path.join(sourcePath, 'ContentScript', 'index.ts'),
     popup: path.join(sourcePath, 'Popup', 'index.tsx'),
     options: path.join(sourcePath, 'Options', 'index.tsx'),
+    sidebar: path.join(sourcePath, 'Sidebar', 'index.tsx'),
   },
 
   output: {
@@ -199,7 +200,10 @@ module.exports = {
               {
                 format: 'zip',
                 source: path.join(destPath, targetBrowser),
-                destination: `${path.join(destPath, targetBrowser)}.${getExtensionFileType(targetBrowser)}`,
+                destination: `${path.join(
+                  destPath,
+                  targetBrowser
+                )}.${getExtensionFileType(targetBrowser)}`,
                 options: {zlib: {level: 6}},
               },
             ],

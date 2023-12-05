@@ -22,34 +22,62 @@ function openWebPage(url: string): Promise<Tabs.Tab> {
   return browser.tabs.create({url});
 }
 
-interface Message {
-  g_ck: string;
+async function getCk(): Promise<string | null> {
+  const tabs = await browser.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+  const currentUrl = tabs[0]?.url;
+
+  if (!currentUrl) {
+    console.error('No active tab or the URL is undefined');
+    return null;
+  }
+
+  // Extract the hostname from the current URL
+  const {hostname} = new URL(currentUrl);
+
+  const url = `https://${hostname}/sn_devstudio_/v1/get_publish_info.do`;
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = await response.json();
+
+  return data.ck as string | null;
 }
+
+// interface Message {
+//   g_ck: string;
+// }
 
 const Popup: React.FC = () => {
   // const [sessionToken, setSessionToken] = React.useState<string | null>(null);
-  const [csfrToken, setCSFRToken] = React.useState<string | null>(null);
+  // const [csfrToken, setCSFRToken] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    const handleMessage = (message: Message): void => {
-      console.log('Received message:', message);
-      setCSFRToken(message.g_ck);
-      browser.storage.local.set({csfrToken: message.g_ck});
-    };
+  // React.useEffect(() => {
+  //   const handleMessage = (message: Message): void => {
+  //     console.log('Received message:', message);
+  //     setCSFRToken(message.g_ck);
+  //     browser.storage.local.set({csfrToken: message.g_ck});
+  //   };
 
-    // Listen for messages from content script
-    browser.runtime.onMessage.addListener(handleMessage);
+  //   // Listen for messages from content script
+  //   browser.runtime.onMessage.addListener(handleMessage);
 
-    // Load the token from the extension's storage when the popup is opened
-    browser.storage.local.get('csfrToken').then((data) => {
-      setCSFRToken(data.csfrToken);
-    });
+  //   // Load the token from the extension's storage when the popup is opened
+  //   browser.storage.local.get('csfrToken').then((data) => {
+  //     setCSFRToken(data.csfrToken);
+  //   });
 
-    // Clean up the event listener when the component unmounts
-    return (): void => {
-      browser.runtime.onMessage.removeListener(handleMessage);
-    };
-  }, []);
+  //   // Clean up the event listener when the component unmounts
+  //   return (): void => {
+  //     browser.runtime.onMessage.removeListener(handleMessage);
+  //   };
+  // }, []);
 
   // const handleGetToken = async (): Promise<void> => {
   //   const newSessionToken = await getToken();
@@ -58,7 +86,7 @@ const Popup: React.FC = () => {
   // };
 
   const handlePerformApiQuery = async (): Promise<void> => {
-    let token = csfrToken; // First, try to get the token from the state
+    let token = await getCk(); // Get the token from the server
 
     // If the state doesn't have the token, try to get it from the storage
     if (!token) {
@@ -66,38 +94,39 @@ const Popup: React.FC = () => {
       token = data.csfrToken;
     }
 
+    console.log(`token: ${JSON.stringify(token, null, 2)}`);
+
+    let url: string | undefined;
+
     if (token) {
-      const url =
-        'https://dev168935.service-now.com/api/now/table/incident/a83820b58f723300e7e16c7827bdeed2';
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: 'BasicCustom',
-          'X-UserToken': token,
-        },
+      const tabs = await browser.tabs.query({
+        active: true,
+        currentWindow: true,
       });
-      const data = await response.json();
-      console.log(data);
+      const currentUrl = tabs[0]?.url;
+      if (currentUrl) {
+        const {hostname} = new URL(currentUrl);
+        url = `https://${hostname}/api/now/table/incident`;
+      } else {
+        console.error('No active tab or the URL is undefined');
+      }
+
+      if (url) {
+        const response = await fetch(url, {
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            // Authorization: 'BasicCustom',
+            'X-UserToken': token,
+            credentials: 'include',
+          },
+        });
+        const data = await response.json();
+        console.log(data);
+      } else {
+        console.error('URL is undefined');
+      }
     }
-  };
-
-  const ws = new WebSocket('ws://localhost:8080');
-
-  ws.onopen = (): void => {
-    console.log('WebSocket is connected');
-  };
-
-  ws.onmessage = (event): void => {
-    console.log('Received data from server:', event.data);
-  };
-
-  ws.onerror = (error): void => {
-    console.error('WebSocket encountered an error:', error);
-  };
-
-  ws.onclose = (): void => {
-    console.log('WebSocket is closed');
   };
 
   return (
