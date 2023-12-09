@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {Fragment, useState, useEffect} from 'react';
+import {createPortal} from 'react-dom';
 import {Dialog, Transition} from '@headlessui/react';
 import {XMarkIcon} from '@heroicons/react/24/outline';
 import './styles.css';
@@ -23,9 +24,10 @@ const Sidebar: React.FC = () => {
     };
   }, []); // Empty
 
-  return (
+  return createPortal(
+    // <div className="z-[1000] absolute">
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+      <Dialog as="div" className="sticky z-[1000]" onClose={setOpen}>
         <div className="fixed inset-0" />
 
         <div className="fixed inset-0 overflow-hidden">
@@ -70,7 +72,9 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
       </Dialog>
-    </Transition.Root>
+    </Transition.Root>,
+    // </div>,
+    document.body
   );
 };
 
