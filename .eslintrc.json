@@ -32,5 +32,17 @@
 		"node": {
 			"tryExtensions": [".tsx"] // append tsx to the list as well
 		}
-	}
+	},
+	"overrides": [
+		{
+		  "files": ["*.ts", "*.tsx"], // TypeScript files
+		  "parser": "@typescript-eslint/parser",
+		  // your TypeScript specific rules...
+		},
+		{
+		  "files": ["*.js', '*.jsx"], // JavaScript files
+		  "parser": "babel-eslint", // or 'espree', or 'esprima'
+		  // your JavaScript specific rules...
+		},
+	  ],
 }

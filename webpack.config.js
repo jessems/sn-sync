@@ -10,6 +10,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const AutoPrefixer = require('autoprefixer');
+const TailwindCSS = require('tailwindcss');
 
 const viewsPath = path.join(__dirname, 'views');
 const sourcePath = path.join(__dirname, 'source');
@@ -99,11 +101,9 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
-        test: /\.(sa|sc|c)ss$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader, // It creates a CSS file per JS file which contains CSS
-          },
+          // MiniCssExtractPlugin.loader,
+          'style-loader',
           {
             loader: 'css-loader', // Takes the CSS files and returns the CSS with imports and url(...) for Webpack
             options: {
@@ -114,20 +114,12 @@ module.exports = {
             loader: 'postcss-loader',
             options: {
               postcssOptions: {
-                plugins: [
-                  [
-                    'autoprefixer',
-                    {
-                      // Options
-                    },
-                  ],
-                ],
+                plugins: [AutoPrefixer, TailwindCSS],
               },
             },
           },
-          'resolve-url-loader', // Rewrites relative paths in url() statements
-          'sass-loader', // Takes the Sass/SCSS file and compiles to the CSS
         ],
+        test: /\.css$/i,
       },
     ],
   },
@@ -167,7 +159,10 @@ module.exports = {
       filename: 'options.html',
     }),
     // write css file(s) to build folder
-    new MiniCssExtractPlugin({filename: 'css/[name].css'}),
+    // new MiniCssExtractPlugin({
+    //   filename: 'css/[name].css',
+    //   chunkFilename: 'css/[id].css',
+    // }),
     // copy static assets
     new CopyWebpackPlugin({
       patterns: [{from: 'source/assets', to: 'assets'}],

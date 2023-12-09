@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {browser, Tabs} from 'webextension-polyfill-ts';
 
-import './styles.scss';
+import './styles.css';
 
 // async function getToken(): Promise<string | null> {
 //   const url =
